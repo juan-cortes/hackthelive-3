@@ -1,4 +1,4 @@
-const getInitialState = (device) => ({
+export const getInitialState = (device) => ({
   isLoading: !!device,
   requestQuitApp: false,
   requestOpenApp: null,
@@ -19,7 +19,7 @@ const getInitialState = (device) => ({
 });
 
 
-const reducer = (state, e) => {
+export const reducer = (state, e) => {
   switch (e.type) {
     case "unresponsiveDevice":
       return { ...state, unresponsive: true };
