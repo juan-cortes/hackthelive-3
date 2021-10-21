@@ -1,6 +1,15 @@
 import semver from "semver";
 import { Observable, concat, from, of, throwError, defer } from "rxjs";
 import { mergeMap, concatMap, map, catchError, delay } from "rxjs/operators";
+import {
+  TransportStatusError,
+  FirmwareOrAppUpdateRequired,
+  UserRefusedOnDevice,
+  BtcUnmatchedApp,
+  UpdateYourApp,
+  DisconnectedDeviceDuringOperation,
+  DisconnectedDevice,
+} from "@ledgerhq/errors";
 import getAppAndVersion from "./getAppAndVersion";
 
 const cmd = ({
@@ -65,11 +74,15 @@ const cmd = ({
           }
         }),
         catchError((e) => {
-          // All errors are disconnects now
-          return of({
+          if (
+            e instanceof DisconnectedDeviceDuringOperation ||
+            e instanceof DisconnectedDevice
+          ) {
+            return of({
               type: "disconnected",
-              error: e
             });
+          }
+          return throwError(e);
         })
       );
     
