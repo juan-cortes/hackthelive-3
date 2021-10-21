@@ -3,15 +3,26 @@ import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import Head from 'next/head'
 import styled from "styled-components";
 
-const Wrapper = styled.div`
-  padding: 20px;
-  border: 1px solid red;
+import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
+
+const Wrapper = styled(Flex).attrs(() => ({
+  p: 2,
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center"
+}))`
+background-color: ${p => p.theme.colors.palette.background.main};
+height: 100vh;
+width: 100vw;
 `
 
 
 
 export default function Home() {
   const [transport, setTransport] = useState();
+
+  const [palette, setPalette] = React.useState("light");
+  const isLight = palette === "light";
 
   const USBSupported = useMemo(()=>typeof window !== "undefined" && !!navigator && !!navigator.usb && typeof navigator.usb.getDevices === "function"
   , [])
@@ -39,6 +50,7 @@ export default function Home() {
   })
 
   return (
+    <StyleProvider fontsPath="assets/fonts" selectedPalette={"light"}>
     <Wrapper>
       <Head>
         <title>Hack the Live #3</title>
@@ -46,11 +58,14 @@ export default function Home() {
       </Head>
       <div>{USBSupported?"WebUSB supported":"WebUSB not supported"}</div>
       <pre>{JSON.stringify(transport, null, 2)}</pre>
-      <button disabled={!!transport} onClick={onConnect}>Connect device</button>
-      <button disabled={!transport} onClick={()=>setTransport()}>Disconnect device</button>
-      <button disabled={!transport} onClick={onOpenApp}>Open Bitcoin</button>
-      <button disabled={!transport} onClick={onClick}>Read device name</button>
-      <button disabled={!transport} onClick={onSetDummyName}>Set dummy name</button>
+      <Flex flexDirection="column">
+      <Button type="primary" disabled={!!transport} onClick={onConnect}>Connect device</Button>
+      <Button type="primary" disabled={!transport} onClick={()=>setTransport()}>Disconnect device</Button>
+      <Button type="primary" disabled={!transport} onClick={onOpenApp}>Open Bitcoin</Button>
+      <Button type="primary" disabled={!transport} onClick={onClick}>Read device name</Button>
+      <Button type="primary" disabled={!transport} onClick={onSetDummyName}>Set dummy name</Button>
+      </Flex>
     </Wrapper>
+    </StyleProvider>
   )
 }
