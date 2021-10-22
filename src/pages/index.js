@@ -13,7 +13,7 @@ import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import TransportWebBLE from "@ledgerhq/hw-transport-web-ble";
 const logger = require("@ledgerhq/logs");
 import Head from "next/head";
-import styled from "styled-components";
+import styled, { keyframes }from "styled-components";
 import {
   concat,
   of,
@@ -36,7 +36,7 @@ import {
   takeWhile,
 } from "rxjs/operators";
 import isEqual from "lodash/isEqual";
-import { Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
+import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
 
 import getAppAndVersion from "../cmd/getAppAndVersion";
 import getAddress from "../cmd/getAddress";
@@ -44,6 +44,11 @@ import connectApp from "../cmd/connectApp";
 import useReplaySubject from "../utils/useReplaySubject";
 import { reducer, getInitialState } from "../deviceAction/reducer";
 import DeviceAction from "../deviceAction";
+
+const fadeIn = keyframes`
+  0% { opacity:0; }
+  100% { opacity 100; }
+`
 
 const Wrapper = styled(Flex).attrs(() => ({
   p: 2,
@@ -67,6 +72,7 @@ const Container = styled(Flex).attrs(() => ({
   min-width: 400px;
   min-height: 400px;
   border-radius: 4px;
+  overflow-x: scroll;
 `
 
 const DeviceActionWrapper = styled(Flex).attrs(() => ({
@@ -82,6 +88,24 @@ const ButtonWrapper = styled(Flex).attrs(() => ({
   justifyContent: "center",
   alignItems: "stretch"
 }))`
+`
+
+const AddressLine = styled(Flex).attrs(() => ({
+  flex: "0 0 50px",
+  flexDirection: "row",
+  justifyContent: "center",
+  alignItems: "center"
+}))`
+cursor: pointer;
+border: 1px solid ${p => p.theme.colors.palette.neutral.c40};
+border-radius: 4px;
+margin: 15px;
+padding: 15px;
+background-color: ${p => p.theme.colors.palette.primary.c80};
+max-width: 600px;
+min-width: 400px;
+align-self: center;
+animation: ${fadeIn} .4s ease-out forwards;
 `
 
 
@@ -100,7 +124,16 @@ const Result = ({state}) => {
     }
   }, []);
 
-  return addresses.length?<Text><pre>{JSON.stringify(addresses, null, 2)}</pre></Text>:null;
+  const selectAddress = useCallback(() => {
+    // postMessage logic here
+  }, [])
+
+  return addresses.length ? <Container>
+    {addresses.map((addr, i) => 
+      <AddressLine key={i} onClick={() => selectAddress(addr)}>
+        <Text type="body">{addr.address}</Text>
+      </AddressLine>)}
+    </Container> : null;
 }
 
 function Home() {
@@ -132,6 +165,7 @@ function Home() {
       const transport = await TransportWebUSB.create();
       setIsBle(false);
       setTransport(transport);
+      setRunning(true);
     }
   }, []);
 
@@ -142,6 +176,7 @@ function Home() {
       const transport = await TransportWebBLE.create();
       setIsBle(true);
       setTransport(transport);
+      setRunning(true);
     }
   }, []);
   
@@ -314,43 +349,45 @@ function Home() {
   }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
   return (
-    <Wrapper>
-      <Head>
-        <title>Hack the Live #3</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <Container>
-        <DeviceActionWrapper>
-          <DeviceAction state={state} type={palette} Result={Result} />
-        </DeviceActionWrapper>
-        <ButtonWrapper>
-        {
-          !transport ? <>
-          <Button style={{margin: "0 15px 0 0"}} type="primary" onClick={onConnectUSB}>
-            USB
-          </Button>
-          
-          <Button type="primary" disabled={typeof window === "undefined" || !window.navigator.bluetooth} onClick={onConnectBLE}>
-            BLE
-          </Button>          </> : <>
-            { /** <Button
-              type="primary"
-              onClick={() => setTransport()}
-            >
-              Disconnect device
+    <StyleProvider fontsPath="assets/fonts" selectedPalette="dark">
+      <Wrapper>
+        <Head>
+          <title>Hack the Live #3</title>
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+        <Container>
+          <DeviceActionWrapper>
+            <DeviceAction state={state} type={palette} Result={Result} />
+          </DeviceActionWrapper>
+          <ButtonWrapper>
+          {
+            !transport ? <>
+            <Button style={{margin: "0 15px 0 0"}} type="primary" onClick={onConnectUSB}>
+              USB
             </Button>
-            <Button type="primary" onClick={()=>setRunning(true)}>
-              Start
-            </Button>
-            <Button type="primary" onClick={onGetAppAndVersion}>
-              Send getAppAndVersion apdu
-            </Button> 
+            
+            <Button type="primary" disabled={typeof window === "undefined" || !window.navigator.bluetooth} onClick={onConnectBLE}>
+              BLE
+            </Button>          </> : <>
+            {/** <Button
+                type="primary"
+                onClick={() => setTransport()}
+              >
+                Disconnect device
+              </Button>
+              <Button type="primary" onClick={()=>setRunning(true)}>
+                Start
+              </Button>
+              <Button type="primary" onClick={onGetAppAndVersion}>
+                Send getAppAndVersion apdu
+              </Button> 
             */}
-          </>
-        }
-        </ButtonWrapper>
-      </Container>
-    </Wrapper>
+            </>
+          }
+          </ButtonWrapper>
+        </Container>
+      </Wrapper>
+    </StyleProvider>
   );
 }
 
