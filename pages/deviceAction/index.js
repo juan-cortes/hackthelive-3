@@ -46,8 +46,6 @@ const DeviceAction = ({
     signMessageRequested,
   } = state;
 
-  console.log(state)
-
 
   const modelId = device ? device.modelId : overridesPreferredDeviceModel || preferredDeviceModel;
 
@@ -136,7 +134,7 @@ const DeviceAction = ({
     });
   }
 
-  return null;
+  return <Result />;
 };
 
 export default DeviceAction;

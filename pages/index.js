@@ -8,6 +8,7 @@ import React, {
 } from "react";
 // import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
+import TransportWebBLE from "@ledgerhq/hw-transport-web-ble";
 const logger = require("@ledgerhq/logs");
 import Head from "next/head";
 import styled from "styled-components";
@@ -54,6 +55,34 @@ height: 100vh;
 width: 100vw;
 `
 
+const Container = styled(Flex).attrs(() => ({
+  p: 2,
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "stretch"
+}))`
+  width: 100%;
+  height: 100%;
+  min-width: 400px;
+  min-height: 400px;
+  border-radius: 4px;
+`
+
+const DeviceActionWrapper = styled(Flex).attrs(() => ({
+  flex: 1
+}))`
+
+max-height: 300px;
+`
+
+const ButtonWrapper = styled(Flex).attrs(() => ({
+  flex: "0 0 50px",
+  flexDirection: "row",
+  justifyContent: "center",
+  alignItems: "stretch"
+}))`
+`
+
 const Result = () => {
 
   useEffect( () => {
@@ -67,11 +96,12 @@ const Result = () => {
 function Home() {
   useEffect(()=>logger.listen(log => console.log(log.type + ": " + log.message)),[]);
   const [transport, setTransport] = useState();
+  const [isBle, setIsBle] = useState(false);
   const [running, setRunning] = useState(false);
   const [state, setState] = useState(getInitialState(transport));
   const deviceSubject = useReplaySubject(transport?.device); // Is device and transport interchangeable here?
 
-  const [palette, setPalette] = React.useState("light");
+  const [palette, setPalette] = React.useState("dark");
   const isLight = palette === "light";
 
   const USBSupported = useMemo(
@@ -83,20 +113,37 @@ function Home() {
     []
   );
 
-  const onConnect = useCallback(async () => {
+  const onConnectUSB = useCallback(async () => {
     if (!transport) {
       // NB This must be triggered from a native user interaction or it will fail, we can't
       // just call this at will, after this initial one we need to call `openConnected` (?)
       const transport = await TransportWebUSB.create();
+      setIsBle(false);
+      setTransport(transport);
+    }
+  }, []);
+
+  const onConnectBLE = useCallback(async () => {
+    if (!transport) {
+      // NB This must be triggered from a native user interaction or it will fail, we can't
+      // just call this at will, after this initial one we need to call `openConnected` (?)
+      const transport = await TransportWebBLE.create();
+      setIsBle(true);
       setTransport(transport);
     }
   }, []);
   
   const onGetAppAndVersion = useCallback(async () => {
     if (transport) {
-      const newTransport = await TransportWebUSB.openConnected();
-      const result = await getAppAndVersion(newTransport)
-      console.log({transport, newTransport},"getAppAndVersionResult")
+      if(isBle) {
+        const newTransport = await TransportWebBLE.openConnected();
+        const result = await getAppAndVersion(newTransport)
+        console.log({transport, newTransport},"getAppAndVersionResult")
+      } else {
+        const newTransport = await TransportWebUSB.openConnected();
+        const result = await getAppAndVersion(newTransport)
+        console.log({transport, newTransport},"getAppAndVersionResult")
+      }
     }
   }, [transport]);
   
@@ -137,13 +184,24 @@ function Home() {
 
       function loop() {
         if (transport._disconnectEmitted) {
-          // We can no longer trust this device, clean this up to avoid multiple calls
-          TransportWebUSB.openConnected().then(t=> {
-            console.log("renewing connection", {transport: transport.channel, t: t.channel})
-            setTransport(t);
-            pollingOnDevice = t;
-            loopT = setTimeout(loop, POLLING);
-          })
+          if(isBle){
+            // We can no longer trust this device, clean this up to avoid multiple calls
+            TransportWebBLE.openConnected().then(t=> {
+              console.log("renewing connection", {transport: transport.channel, t: t.channel})
+              setTransport(t);
+              pollingOnDevice = t;
+              loopT = setTimeout(loop, POLLING);
+            })
+          } else {
+            // We can no longer trust this device, clean this up to avoid multiple calls
+            TransportWebUSB.openConnected().then(t=> {
+              console.log("renewing connection", {transport: transport.channel, t: t.channel})
+              setTransport(t);
+              pollingOnDevice = t;
+              loopT = setTimeout(loop, POLLING);
+            })
+          }
+          
           return;
         }
         if (!pollingOnDevice) {
@@ -248,23 +306,36 @@ function Home() {
         <title>Hack the Live #3</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <DeviceAction state={state} type={palette} Result={Result} />
-      <Button type="primary" disabled={!!transport} onClick={onConnect}>
-        Connect device
-      </Button>
-      <Button
-        type="primary"
-        disabled={!transport}
-        onClick={() => setTransport()}
-      >
-        Disconnect device
-      </Button>
-      <Button type="primary" disabled={!transport} onClick={()=>setRunning(true)}>
-        Start
-      </Button>
-      <Button type="primary" disabled={!transport} onClick={onGetAppAndVersion}>
-        Send getAppAndVersion apdu
-      </Button>
+      <Container>
+        <DeviceActionWrapper>
+          <DeviceAction state={state} type={palette} Result={Result} />
+        </DeviceActionWrapper>
+        <ButtonWrapper>
+        {
+          !transport ? <>
+          <Button style={{margin: "0 15px 0 0"}} type="primary" onClick={onConnectUSB}>
+            USB
+          </Button>
+          
+          <Button type="primary" disabled={!navigator.bluetooth} onClick={onConnectBLE}>
+            BLE
+          </Button>          </> : <>
+            <Button
+              type="primary"
+              onClick={() => setTransport()}
+            >
+              Disconnect device
+            </Button>
+            <Button type="primary" onClick={()=>setRunning(true)}>
+              Start
+            </Button>
+            <Button type="primary" onClick={onGetAppAndVersion}>
+              Send getAppAndVersion apdu
+            </Button>
+          </>
+        }
+        </ButtonWrapper>
+      </Container>
     </Wrapper>
     </StyleProvider>
   );
