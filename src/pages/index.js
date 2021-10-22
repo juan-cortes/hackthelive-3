@@ -36,7 +36,7 @@ import {
   takeWhile,
 } from "rxjs/operators";
 import isEqual from "lodash/isEqual";
-import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
+import { StyleProvider, Text, Logos, Flex, Button, Switch } from "@ledgerhq/react-ui";
 
 import getAppAndVersion from "../cmd/getAppAndVersion";
 import getAddress from "../cmd/getAddress";
@@ -50,15 +50,30 @@ const fadeIn = keyframes`
   100% { opacity 100; }
 `
 
+const fadeInGrow = keyframes`
+  0% { opacity:0; max-height: 0; }
+  100% { opacity 1; max-height: 100px; }
+`
+
 const Wrapper = styled(Flex).attrs(() => ({
-  p: 2,
   flex: 1,
   justifyContent: "center",
   alignItems: "center"
 }))`
 background-color: ${p => p.theme.colors.palette.background.main};
+width: 100%;
 height: 100vh;
-width: 100vw;
+min-height: 500px;
+min-width: 500px;
+overflow-x: visible;
+overflow-y: scroll;
+`
+
+const SwitchContainer = styled.div`
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2;
 `
 
 const Container = styled(Flex).attrs(() => ({
@@ -69,17 +84,25 @@ const Container = styled(Flex).attrs(() => ({
 }))`
   width: 100%;
   height: 100%;
-  min-width: 400px;
-  min-height: 400px;
   border-radius: 4px;
-  overflow-x: scroll;
+  animation: ${fadeIn} .4s ease-out forwards;
+`
+
+
+const AddressContainer = styled(Flex).attrs(() => ({
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "stretch"
+}))`
+  width: 100%;
+  height: 100%;
+
 `
 
 const DeviceActionWrapper = styled(Flex).attrs(() => ({
   flex: 1
 }))`
-
-max-height: 300px;
+max-height: 500px;
 `
 
 const ButtonWrapper = styled(Flex).attrs(() => ({
@@ -97,15 +120,11 @@ const AddressLine = styled(Flex).attrs(() => ({
   alignItems: "center"
 }))`
 cursor: pointer;
-margin: 15px;
+margin: 7.5px;
 max-width: 600px;
 min-width: 400px;
 align-self: center;
-animation: ${fadeIn} .4s ease-out forwards;
-${Button} {
-  flex: 1;
-  width: 100%;
-}
+animation: ${fadeInGrow} .4s ease-out forwards;
 `
 
 
@@ -128,15 +147,15 @@ const Result = ({state}) => {
     // postMessage logic here
   }, [])
 
-  return addresses.length ? <Container>
+  return addresses.length ? <AddressContainer>
     {addresses.map((addr, i) => 
     <AddressLine key={i}>
-      <Button type="primary" key={i} onClick={() => selectAddress(addr)}>
+      <Button style={{width: "400px"}} type="primary" key={i} onClick={() => selectAddress(addr)}>
         {addr.address}
       </Button>
     </AddressLine>
       )}
-    </Container> : null;
+    </AddressContainer> : null;
 }
 
 function Home() {
@@ -150,8 +169,6 @@ function Home() {
   // TODO: make it reactive
   const [palette, setPalette] = React.useState("light");
 
-  useEffect(()=>logger.listen(log => console.log(log.type + ": " + log.message)),[]);
-
   const USBSupported = useMemo(
     () =>
       typeof window !== "undefined" &&
@@ -161,11 +178,19 @@ function Home() {
     []
   );
 
+  const BLESupported = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      !!navigator &&
+      !!navigator.bluetooth,
+    []
+  );
+
   const onConnectUSB = useCallback(async () => {
     if (!transport) {
       // NB This must be triggered from a native user interaction or it will fail, we can't
       // just call this at will, after this initial one we need to call `openConnected` (?)
-      const transport = await TransportWebUSB.create();
+        const transport = await TransportWebUSB.create();
       setIsBle(false);
       setTransport(transport);
       setRunning(true);
@@ -176,12 +201,20 @@ function Home() {
     if (!transport) {
       // NB This must be triggered from a native user interaction or it will fail, we can't
       // just call this at will, after this initial one we need to call `openConnected` (?)
-      const transport = await TransportWebBLE.create();
+        const transport = await TransportWebBLE.create();
       setIsBle(true);
       setTransport(transport);
       setRunning(true);
     }
   }, []);
+
+  useEffect(()=>{
+    logger.listen(log => console.log(log.type + ": " + log.message))
+  },[]);
+
+  
+
+
   
   const onGetAppAndVersion = useCallback(async () => {
     if (transport) {
@@ -245,7 +278,7 @@ function Home() {
           } else {
             // We can no longer trust this device, clean this up to avoid multiple calls
             TransportWebUSB.openConnected().then(t=> {
-              console.log("renewing connection", {transport: transport.channel, t: t.channel})
+              console.log("renewing connection", {transport: transport.channel, t: t && t.channel})
               setTransport(t);
               pollingOnDevice = t;
               loopT = setTimeout(loop, POLLING);
@@ -279,8 +312,8 @@ function Home() {
                 disconnectT = null;
                 clearTimeout(disconnectT);
               }
-              if (!event) return;
-              if (event.type === "unresponsiveDevice") {
+              if (!event || event.type === "unresponsiveDevice") {
+                o.next("disconnected")
                 return; // ignore unresponsive case which happens for polling
               } else if (event.type === "disconnected") { 
                 // the disconnect event is delayed to debounce the reconnection that happens when switching apps
@@ -352,8 +385,11 @@ function Home() {
   }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
   return (
-    <StyleProvider fontsPath="assets/fonts" selectedPalette="dark">
+    <StyleProvider fontsPath="assets/fonts" selectedPalette={palette}>
       <Wrapper>
+        <SwitchContainer>
+          <Switch checked={palette === "light"} onChange={() => setPalette(p => p === "light" ? "dark" : "light")} />
+        </SwitchContainer>
         <Head>
           <title>Hack the Live #3</title>
           <link rel="icon" href="/favicon.ico" />
@@ -362,32 +398,21 @@ function Home() {
           <DeviceActionWrapper>
             <DeviceAction state={state} type={palette} Result={Result} />
           </DeviceActionWrapper>
-          <ButtonWrapper>
+          
           {
-            !transport ? <>
-            <Button style={{margin: "0 15px 0 0"}} type="primary" onClick={onConnectUSB}>
-              USB
-            </Button>
-            
-            <Button type="primary" disabled={typeof window === "undefined" || !window.navigator.bluetooth} onClick={onConnectBLE}>
-              BLE
-            </Button>          </> : <>
-            {/** <Button
-                type="primary"
-                onClick={() => setTransport()}
-              >
-                Disconnect device
-              </Button>
-              <Button type="primary" onClick={()=>setRunning(true)}>
-                Start
-              </Button>
-              <Button type="primary" onClick={onGetAppAndVersion}>
-                Send getAppAndVersion apdu
-              </Button> 
-            */}
-            </>
+            !transport ? (
+              <ButtonWrapper>
+                <Button style={{margin: "0 15px 0 0"}} type="primary" onClick={onConnectUSB}>
+                  USB
+                </Button>
+                
+                <Button type="primary" disabled={!BLESupported} onClick={onConnectBLE}>
+                  BLE
+                </Button>         
+              </ButtonWrapper>
+            ) : null
           }
-          </ButtonWrapper>
+          
         </Container>
       </Wrapper>
     </StyleProvider>

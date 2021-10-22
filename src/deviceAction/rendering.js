@@ -289,6 +289,6 @@ export const renderLoading = ({
       <InfiniteLoader />
     </AnimationWrapper>
     <Footer>
-      <Title>{children || t("loading") }</Title>
+      <Title>{children }</Title>
     </Footer>
   </Wrapper>;

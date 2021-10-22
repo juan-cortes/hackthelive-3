@@ -44,6 +44,7 @@ const DeviceAction = ({
     deviceStreamingProgress,
     allowOpeningGranted,
     signMessageRequested,
+    opened
   } = state;
 
 
