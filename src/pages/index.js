@@ -140,9 +140,9 @@ const Result = ({state}) => {
 }
 
 function Home() {
-  const { t } = useTranslation("common");
   const [transport, setTransport] = useState();
   const [isBle, setIsBle] = useState(false);
+  const [isBLESupported, setBLESupported] = useState(false);
   const [running, setRunning] = useState(false);
   const [state, setState] = useState(getInitialState(transport));
   const deviceSubject = useReplaySubject(transport?.device); // Is device and transport interchangeable here?
@@ -351,8 +351,12 @@ function Home() {
     };
   }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
+  // Running client-side only - Set BLE as supported if available
+  useEffect(() => {
+    if (typeof window !== "undefined" || window.navigator.bluetooth) setBLESupported(true);
+  }, []);
+
   return (
-    <StyleProvider fontsPath="assets/fonts" selectedPalette="dark">
       <Wrapper>
         <Head>
           <title>Hack the Live #3</title>
@@ -369,7 +373,7 @@ function Home() {
               USB
             </Button>
             
-            <Button type="primary" disabled={typeof window === "undefined" || !window.navigator.bluetooth} onClick={onConnectBLE}>
+            <Button type="primary" disabled={!isBLESupported} onClick={onConnectBLE}>
               BLE
             </Button>          </> : <>
             {/** <Button
@@ -390,7 +394,6 @@ function Home() {
           </ButtonWrapper>
         </Container>
       </Wrapper>
-    </StyleProvider>
   );
 }
 
