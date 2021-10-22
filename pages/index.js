@@ -67,23 +67,30 @@ export default function Home() {
       // NB This must be triggered from a native user interaction or it will fail, we can't
       // just call this at will, after this initial one we need to call `openConnected` (?)
       const transport = await TransportWebUSB.create();
-      transport.setDebugMode(true);
       setTransport(transport);
     }
   }, []);
+  
+  const onGetAppAndVersion = useCallback(async () => {
+    if (transport) {
+      const newTransport = await TransportWebUSB.openConnected();
+      const result = await getAppAndVersion(newTransport)
+      console.log({transport, newTransport},"getAppAndVersionResult")
+    }
+  }, [transport]);
   
 
   let pollingOnDevice;
 
   useEffect(() => {
     if (!running || state.opened) return;
-    const action = () => connectApp({transport, appName:"Bitcoin"})
+    const action = (transport) => connectApp({transport, appName:"Bitcoin"})
     
     // Buckle up for spageti 
     const sub = Observable.create((o) => {
-      const POLLING = 2000;
+      const POLLING = 5000;
       const INIT_DEBOUNCE = 5000;
-      const DISCONNECT_DEBOUNCE = 5000;
+      const DISCONNECT_DEBOUNCE = 1000;
       const DEVICE_POLLING_TIMEOUT = 20000;
 
       
@@ -108,12 +115,22 @@ export default function Home() {
       let device = null; // used as internal state for polling
 
       function loop() {
+        if (transport._disconnectEmitted) {
+          // We can no longer trust this device, clean this up to avoid multiple calls
+          TransportWebUSB.openConnected().then(t=> {
+            console.log("renewing connection", {transport: transport.channel, t: t.channel})
+            setTransport(t);
+            pollingOnDevice = t;
+            loopT = setTimeout(loop, POLLING);
+          })
+          return;
+        }
         if (!pollingOnDevice) {
           loopT = setTimeout(loop, POLLING);
           return;
         }
 
-        connectSub = from(action())
+        connectSub = from(action(transport))
           .pipe(
             timeout(DEVICE_POLLING_TIMEOUT),
             catchError((err) => {
@@ -122,7 +139,7 @@ export default function Home() {
           )
           .subscribe({
             next: (event) => {
-              if (!event) return;
+              
               if (initT) {
                 clearTimeout(initT);
                 initT = null;
@@ -132,6 +149,7 @@ export default function Home() {
                 disconnectT = null;
                 clearTimeout(disconnectT);
               }
+              if (!event) return;
               if (event.type === "unresponsiveDevice") {
                 return; // ignore unresponsive case which happens for polling
               } else if (event.type === "disconnected") { 
@@ -156,6 +174,7 @@ export default function Home() {
               }
             },
             complete: () => {
+              console.log("wadus", "complete?", state)
               // poll again in some time
               loopT = setTimeout(loop, POLLING);
             },
@@ -196,10 +215,10 @@ export default function Home() {
 
     // FIXME shouldn't we handle errors?! (is an error possible?)
     return () => {
-      console.log("disconnecting")
+      console.log("unmounting")
       sub.unsubscribe();
     };
-  }, [state.opened, pollingOnDevice, running]);
+  }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
   return (
     <Wrapper>
@@ -207,7 +226,6 @@ export default function Home() {
         <title>Hack the Live #3</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div>{USBSupported ? "WebUSB supported" : "WebUSB not supported"}</div>
       <button type="primary" disabled={!!transport} onClick={onConnect}>
         Connect device
       </button>
@@ -220,6 +238,9 @@ export default function Home() {
       </button>
       <button type="primary" disabled={!transport} onClick={()=>setRunning(true)}>
         Start
+      </button>
+      <button type="primary" disabled={!transport} onClick={onGetAppAndVersion}>
+        Send getAppAndVersion apdu
       </button>
     </Wrapper>
   );

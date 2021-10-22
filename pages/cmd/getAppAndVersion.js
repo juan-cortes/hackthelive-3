@@ -1,6 +1,6 @@
 import Transport from "@ledgerhq/hw-transport";
 
-export default async (
+const getAppAndVersion = async (
   transport
 ) => {
   const r = await transport.send(0xb0, 0x01, 0x00, 0x00);
@@ -25,3 +25,5 @@ export default async (
     flags,
   };
 };
+
+export default getAppAndVersion;
