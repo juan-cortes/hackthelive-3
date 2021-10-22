@@ -1,0 +1,6 @@
+{
+    "connectDevice": "Connecter l'appareil",
+    "disconnectDevice": "Déconnecter l'appareil",
+    "start": "Commencer",
+    "sendAdpu": "Envoyer getAppAndVersion apdu"
+}

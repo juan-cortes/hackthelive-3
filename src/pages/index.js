@@ -6,7 +6,9 @@ import React, {
   useRef,
   useReducer
 } from "react";
-// import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import Link from "next/link";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import TransportWebBLE from "@ledgerhq/hw-transport-web-ble";
 const logger = require("@ledgerhq/logs");
@@ -102,7 +104,7 @@ const Result = ({state}) => {
 }
 
 function Home() {
-  useEffect(()=>logger.listen(log => console.log(log.type + ": " + log.message)),[]);
+  const { t } = useTranslation("common");
   const [transport, setTransport] = useState();
   const [isBle, setIsBle] = useState(false);
   const [running, setRunning] = useState(false);
@@ -111,6 +113,9 @@ function Home() {
 
   const [palette, setPalette] = React.useState("dark");
   const isLight = palette === "light";
+
+
+  useEffect(()=>logger.listen(log => console.log(log.type + ": " + log.message)),[]);
 
   const USBSupported = useMemo(
     () =>
@@ -310,7 +315,6 @@ function Home() {
   }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
   return (
-      <StyleProvider fontsPath="assets/fonts" selectedPalette={palette}>
     <Wrapper>
       <Head>
         <title>Hack the Live #3</title>
@@ -348,9 +352,15 @@ function Home() {
         </ButtonWrapper>
       </Container>
     </Wrapper>
-    </StyleProvider>
   );
 }
 
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common', 'deviceAction'])),
+    },
+  };
+}
 
 export default Home;

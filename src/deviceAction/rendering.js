@@ -116,8 +116,10 @@ const TroubleshootingWrapper = styled.div`
 export const renderRequestQuitApp = ({
   modelId,
   type,
-  t
-}) => (
+}) => {
+  const { t } = useTranslation("deviceAction");
+  
+  return (
   <Wrapper>
     <Header />
     <AnimationWrapper modelId={modelId}>
@@ -125,13 +127,16 @@ export const renderRequestQuitApp = ({
     </AnimationWrapper>
     <Footer>
       <Title>
-        {t("DeviceAction.quitApp")}
+        {t("quitApp")}
       </Title>
     </Footer>
   </Wrapper>
-);
+);};
 
-export const renderListingApps = ({ t }) => (
+export const renderListingApps = () => {
+  const { t } = useTranslation("deviceAction");
+  
+  return (
   <Wrapper id="deviceAction-loading">
     <Header />
     <ProgressWrapper>
@@ -139,21 +144,23 @@ export const renderListingApps = ({ t }) => (
     </ProgressWrapper>
     <Footer>
       <Title>
-        {t("DeviceAction.listApps")}
+        {t("listApps")}
       </Title>
       <SubTitle>
-        {t("DeviceAction.listAppsDescription")}
+        {t("listAppsDescription")}
       </SubTitle>
     </Footer>
   </Wrapper>
-);
+);};
 
 export const renderAllowManager = ({
   modelId,
   type,
   wording,
-  t
-}) => (
+}) => {
+  const { t } = useTranslation("deviceAction");
+  
+  return (
   <Wrapper>
     <DeviceBlocker />
     <Header />
@@ -162,11 +169,11 @@ export const renderAllowManager = ({
     </AnimationWrapper>
     <Footer>
       <Title>
-        {t("DeviceAction.allowManagerPermission", { wording })}
+        {t("allowManagerPermission", { wording })}
       </Title>
     </Footer>
   </Wrapper>
-);
+);};
 
 export const renderAllowOpeningApp = ({
   modelId,
@@ -174,8 +181,10 @@ export const renderAllowOpeningApp = ({
   wording,
   tokenContext,
   isDeviceBlocker,
-  t
-}) => (
+}) => {
+  const { t } = useTranslation("deviceAction");
+  
+  return (
   <Wrapper>
     {isDeviceBlocker ? <DeviceBlocker /> : null}
     <Header />
@@ -184,17 +193,17 @@ export const renderAllowOpeningApp = ({
     </AnimationWrapper>
     <Footer>
       <Title>
-        {t("DeviceAction.allowAppPermission", { wording })}
+        {t("allowAppPermission", { wording })}
         {!tokenContext ? null : (
           <>
             {"\n"}
-            {t("DeviceAction.allowAppPermissionSubtitleToken", { token: tokenContext.name })}
+            {t("allowAppPermissionSubtitleToken", { token: tokenContext.name })}
           </>
         )}
       </Title>
     </Footer>
   </Wrapper>
-);
+);};
 
 export const renderError = ({
   error,
@@ -206,8 +215,10 @@ export const renderError = ({
   warning,
   managerAppName,
   requireFirmwareUpdate,
-  t
-}) => (
+}) => {
+  const { t } = useTranslation("deviceAction");
+  
+  return (
   <Wrapper id={`error-${error.name}`}>
     <Logo warning={warning}>
       <ErrorIcon size={44} error={error} />
@@ -226,12 +237,11 @@ export const renderError = ({
           ) : null}
     </ButtonContainer>
   </Wrapper>
-);
+);};
 
 export const renderInWrongAppForAccount = ({
   onRetry,
   accountName,
-  t
 }) =>
   renderError({
     error: new WrongDeviceForAccount(null, { accountName }),
@@ -246,8 +256,10 @@ export const renderConnectYourDevice = ({
   onRetry,
   device,
   unresponsive,
-  t
-}) => (
+}) => {
+  const { t } = useTranslation("deviceAction");
+  
+  return (
   <Wrapper>
     <Header />
     <AnimationWrapper modelId={modelId}>
@@ -261,17 +273,19 @@ export const renderConnectYourDevice = ({
     </AnimationWrapper>
     <Footer>
       <Title>
-        {t(unresponsive ? "DeviceAction.unlockDevice" : "DeviceAction.connectAndUnlockDevice")}
+        {t(unresponsive ? "unlockDevice" : "connectAndUnlockDevice")}
       </Title>
     </Footer>
   </Wrapper>
-);
+)};
 
 export const renderFirmwareUpdating = ({
   modelId,
   type,
-  t
-}) => (
+}) => {
+  const { t } = useTranslation("deviceAction");
+  
+  return (
   <Wrapper>
     <Header />
     <AnimationWrapper modelId={modelId}>
@@ -279,24 +293,28 @@ export const renderFirmwareUpdating = ({
     </AnimationWrapper>
     <Footer>
       <Title>
-        {t("DeviceAction.unlockDeviceAfterFirmwareUpdate")}
+        {t("unlockDeviceAfterFirmwareUpdate")}
       </Title>
     </Footer>
   </Wrapper>
 );
+  };
 
 export const renderLoading = ({
   modelId,
   children,
-  t
-}) => (
+}) => {
+  const { t } = useTranslation("deviceAction");
+  
+  return (
   <Wrapper id="deviceAction-loading">
     <Header />
     <AnimationWrapper modelId={modelId}>
       <InfiniteLoader />
     </AnimationWrapper>
     <Footer>
-      <Title>{children || t("DeviceAction.loading") }</Title>
+      <Title>{children || t("loading") }</Title>
     </Footer>
   </Wrapper>
 );
+  };

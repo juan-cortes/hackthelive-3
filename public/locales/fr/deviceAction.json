@@ -1,0 +1,21 @@
+{
+    "allowAppPermission": "Ouvre l'application {{wording}} sur ton appareil",
+    "allowAppPermissionSubtitleToken": "pour gérer ton {{token}} tokens",
+    "allowManagerPermission": "Autorise {{wording}} sur ton appareil",
+    "loading": "Chargement...",
+    "connectAndUnlockDevice": "Connecte et dévérouille ton appareil",
+    "unlockDevice": "Dévérouille ton appareil",
+    "unlockDeviceAfterFirmwareUpdate": "Attends la mise à jour du firmware puis dévérouille ton appareil en utilisant ton PIN",
+    "quitApp": "Quitte l'applicatin sur ton appareil",
+    "appNotInstalledTitle": "L'application requise est manquante",
+    "appNotInstalledTitle_plural": "Les applications requises sont manquantes",
+    "appNotInstalled": "L'application {{appName}} est requise pour faire cette action. Rendez-vous sur le manageur pour installer l'application sur ton appareil",
+    "appNotInstalled_plural": "Les applications {{appName}} sont requies pour faire cette action. Rendez-vous sur le manageur pour installer les applications sur ton appareil",
+    "openManager": "Ouvre le manageur",
+    "outdated": "La version de l'application est expiré",
+    "outdatedDesc": "Une mise à jour importante de l'application {{appName}} sur ton appareil est disponible. Rendez-vous sur le manageur pour l'appliquer.",
+    "installApp": "Installation de l'application {{appName}}",
+"installAppDescription": "Attendez jusqu'à l'installation soit terminée",
+    "listApps": "Scanne des dépendances de l'application",
+    "listAppsDescription": "Attendez qu'on soit sûr que vous possédez toutes les applications requises"
+}

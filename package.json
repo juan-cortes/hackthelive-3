@@ -16,7 +16,6 @@
     "@ledgerhq/hw-transport-webusb": "^6.10.0",
     "@ledgerhq/logs": "^6.10.0",
     "@ledgerhq/react-ui": "^0.1.0",
-    "i18next": "^21.3.2",
     "eip55": "^2.1.0",
     "next": "^11.0.0",
     "next-i18next": "^8.9.0",
