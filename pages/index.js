@@ -328,7 +328,7 @@ function Home() {
             USB
           </Button>
           
-          <Button type="primary" disabled={!window.navigator.bluetooth} onClick={onConnectBLE}>
+          <Button type="primary" disabled={typeof window === "undefined" || !window.navigator.bluetooth} onClick={onConnectBLE}>
             BLE
           </Button>          </> : <>
             <Button
