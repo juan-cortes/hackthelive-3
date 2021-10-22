@@ -36,7 +36,7 @@ import {
   takeWhile,
 } from "rxjs/operators";
 import isEqual from "lodash/isEqual";
-import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
+import { Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
 
 import getAppAndVersion from "../cmd/getAppAndVersion";
 import getAddress from "../cmd/getAddress";
@@ -111,9 +111,8 @@ function Home() {
   const [state, setState] = useState(getInitialState(transport));
   const deviceSubject = useReplaySubject(transport?.device); // Is device and transport interchangeable here?
 
-  const [palette, setPalette] = React.useState("dark");
-  const isLight = palette === "light";
-
+  // TODO: make it reactive
+  const [palette, setPalette] = React.useState("light");
 
   useEffect(()=>logger.listen(log => console.log(log.type + ": " + log.message)),[]);
 
