@@ -714,6 +714,13 @@
     styled-components "^5.2.3"
     styled-system "^5.1.5"
 
+"@mixer/postmessage-rpc@^1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@mixer/postmessage-rpc/-/postmessage-rpc-1.1.4.tgz#ee952ff329161c3077dc9ad732f9fbe63fafa82f"
+  integrity sha512-Cb/3CukztYD/mXILTOjtlOsfKEeHNBJE5Cipn5i+IAVm2pvbI0LaVJ1TJZS67BOTcAlBcvTjhwAlzyrpQO0TeA==
+  dependencies:
+    eventemitter3 "^3.1.0"
+
 "@napi-rs/triples@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@napi-rs/triples/-/triples-1.0.3.tgz#76d6d0c3f4d16013c61e45dfca5ff1e6c31ae53c"
@@ -1859,6 +1866,11 @@ ethjs-util@0.1.6:
   dependencies:
     is-hex-prefixed "1.0.0"
     strip-hex-prefix "1.0.0"
+
+eventemitter3@^3.1.0:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-3.1.2.tgz#2d3d48f9c346698fce83a85d7d664e98535df6e7"
+  integrity sha512-tvtQIeLVHjDkJYnzf2dgVMxfuSGJeM/7UCG17TT4EumTfNtF+0nebF/4zWOIkCreAbtNqhGEboB6BWrwqNaw4Q==
 
 events@^3.0.0, events@^3.3.0:
   version "3.3.0"

@@ -4,7 +4,8 @@ import React, {
   useState,
   useMemo,
   useRef,
-  useReducer
+  useReducer,
+  useContext,
 } from "react";
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -46,6 +47,7 @@ import connectApp from "../cmd/connectApp";
 import useReplaySubject from "../utils/useReplaySubject";
 import { reducer, getInitialState } from "../deviceAction/reducer";
 import DeviceAction from "../deviceAction";
+import { RPCContext } from "../utils/RPCProvider";
 
 const fadeIn = keyframes`
   0% { opacity:0; }
@@ -132,6 +134,7 @@ animation: ${fadeInGrow} .4s ease-out forwards;
 
 const APP = "Ethereum"; // <-- make sure you have this installed
 const GetAddressResult = ({state}) => {
+  const rpcMethods = useContext(RPCContext);
   const [addresses, setAddresses] = useState([])
 
   useEffect(() => {
@@ -172,8 +175,8 @@ const GetAddressResult = ({state}) => {
     }
   }, []);
 
-  const selectAddress = useCallback(() => {
-    // postMessage logic here
+  const selectAddress = useCallback((address) => {
+    if (rpcMethods.requestAccount) rpcMethods.requestAccount.resolve(address);
   }, [])
 
   return addresses.length ? <AddressContainer>
