@@ -34,17 +34,14 @@ import {
   takeWhile,
 } from "rxjs/operators";
 import isEqual from "lodash/isEqual";
-
-import getAppAndVersion from "../pages/cmd/getAppAndVersion";
-import getAddress from "../pages/cmd/getAddress";
-
-import connectApp from "../pages/cmd/connectApp";
-import useReplaySubject from "../pages/utils/useReplaySubject";
-import { reducer, getInitialState } from "../pages/deviceAction/reducer";
-
 import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
 
-import DeviceAction from "./deviceAction";
+import getAppAndVersion from "../cmd/getAppAndVersion";
+import getAddress from "../cmd/getAddress";
+import connectApp from "../cmd/connectApp";
+import useReplaySubject from "../utils/useReplaySubject";
+import { reducer, getInitialState } from "../deviceAction/reducer";
+import DeviceAction from "../deviceAction";
 
 const Wrapper = styled(Flex).attrs(() => ({
   p: 2,
