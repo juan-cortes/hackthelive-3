@@ -4,7 +4,8 @@ import React, {
   useState,
   useMemo,
   useRef,
-  useReducer
+  useReducer,
+  useContext,
 } from "react";
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -47,6 +48,7 @@ import useReplaySubject from "../utils/useReplaySubject";
 import { reducer, getInitialState } from "../deviceAction/reducer";
 import DeviceAction from "../deviceAction";
 import SignMessageConfirm from "../deviceAction/signMessageConfirm";
+import { RPCContext } from "../utils/RPCProvider";
 
 const fadeIn = keyframes`
   0% { opacity:0; }
@@ -133,6 +135,7 @@ animation: ${fadeInGrow} .4s ease-out forwards;
 
 const APP = "Ethereum"; // <-- make sure you have this installed
 const GetAddressResult = ({state}) => {
+  const rpcMethods = useContext(RPCContext);
   const [addresses, setAddresses] = useState([])
 
   useEffect(() => {
@@ -173,8 +176,8 @@ const GetAddressResult = ({state}) => {
     }
   }, []);
 
-  const selectAddress = useCallback(() => {
-    // postMessage logic here
+  const selectAddress = useCallback((address) => {
+    if (rpcMethods.requestAccount) rpcMethods.requestAccount.resolve(address);
   }, [])
 
   return addresses.length ? <AddressContainer>
@@ -223,7 +226,7 @@ const SignTransactionResult = ({
     });
     setRawTx(rawTx);
     // TODO LUIZ HELP <==
-    const result = await eth.signTransaction("44'/60'/0'/0/0", rawTx.serialize().toString("hex"))
+    const result = await eth.signTransaction(derivationPath, rawTx.serialize().toString("hex"))
   }, [])
   
   return rawTx ? <SignMessageConfirm
