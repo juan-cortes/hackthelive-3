@@ -30,11 +30,11 @@ const RPCProvider = ({ children }) => {
       );
     });
 
-    // TODO: REMOVE ME -- FAKE CALL TO MOCK window.opener call
-    rpc.call("requestAccount").then((result) => {
-      console.log('rpc.call("requestAccount") result', result);
-      return result;
-    });
+    // --- Window.opener mock call
+    /* rpc.call("requestAccount").then((result) => {
+    **   console.log('rpc.call("requestAccount") result', result);
+    **   return result;
+       }); */
   }, []);
 
   return (
