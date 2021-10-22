@@ -21,5 +21,6 @@
   "installApp": "{{appName}} App installation",
   "installAppDescription": "Please wait until the installation is finished",
   "listApps": "Checking App dependencies",
-  "listAppsDescription": "Please wait while we make sure you have all the required apps"
+  "listAppsDescription": "Please wait while we make sure you have all the required apps",
+  "signTx": "Please sign the transacttion"
 }

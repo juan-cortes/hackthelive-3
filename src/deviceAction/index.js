@@ -11,6 +11,7 @@ import {
 } from "./rendering";
 import { reducer, getInitialState } from "./reducer";
 import { useTranslation } from "react-i18next";
+import SignMessageConfirm from "./signMessageConfirm";
 
 const DeviceAction = ({
   action,
@@ -22,6 +23,8 @@ const DeviceAction = ({
   preferredDeviceModel = "nanoX",
   type,
   state,
+  transactionData,
+  derivationPath
 }) => {
   const { t } = useTranslation("deviceAction");
   const {
@@ -110,14 +113,13 @@ const DeviceAction = ({
 
   if (request && signMessageRequested) {
     const { account } = request;
-    return null;
-    // return (
-    //   <SignMessageConfirm
-    //     device={device}
-    //     account={account}
-    //     signMessageRequested={signMessageRequested}
-    //   />
-    // );
+    return (
+      <SignMessageConfirm
+        device={device}
+        signMessageRequested={signMessageRequested}
+        type={type}
+      />
+    );
   }
 
   if (typeof deviceStreamingProgress === "number") {
@@ -136,7 +138,15 @@ const DeviceAction = ({
     });
   }
 
-  return <Result state={state} />;
+  return <Result 
+    transactionData={transactionData} 
+    derivationPath={derivationPath}
+    state={state} 
+    device={device}
+    signMessageRequested={signMessageRequested}
+    type={type}
+    t={t}
+  />;
 };
 
 export default DeviceAction;

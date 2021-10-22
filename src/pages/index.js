@@ -46,6 +46,7 @@ import connectApp from "../cmd/connectApp";
 import useReplaySubject from "../utils/useReplaySubject";
 import { reducer, getInitialState } from "../deviceAction/reducer";
 import DeviceAction from "../deviceAction";
+import SignMessageConfirm from "../deviceAction/signMessageConfirm";
 
 const fadeIn = keyframes`
   0% { opacity:0; }
@@ -187,7 +188,16 @@ const GetAddressResult = ({state}) => {
     </AddressContainer> : null;
 }
 
-const SignTransactionResult = (transactionData, derivationPath) => ({state}) => {
+const SignTransactionResult = ({ 
+    transactionData, 
+    derivationPath, 
+    state, 
+    device,
+    account,
+    signMessageRequested,
+    type,
+    t
+}) => {
   // We have access to the data passed from the provider at this point
   const {
     data,
@@ -196,6 +206,8 @@ const SignTransactionResult = (transactionData, derivationPath) => ({state}) => 
     to,
     value,
   } = transactionData;
+
+  const [rawTx, setRawTx] = useState();
 
   useEffect( async () => {
     if (!state.appAndVersion) return null;
@@ -209,11 +221,17 @@ const SignTransactionResult = (transactionData, derivationPath) => ({state}) => 
       to,
       value,
     });
+    setRawTx(rawTx);
     // TODO LUIZ HELP <==
     const result = await eth.signTransaction("44'/60'/0'/0/0", rawTx.serialize().toString("hex"))
   }, [])
   
-  return null;
+  return rawTx ? <SignMessageConfirm
+    device={device}
+    signMessageRequested={rawTx}
+    type={type}
+    t={t}
+  /> : null;
 }
 
 function Home() {
@@ -464,7 +482,7 @@ function Home() {
           <DeviceActionWrapper>
             {/* <DeviceAction state={state} type={palette} Result={GetAddressResult} /> */}
             {/* TODO hook this nto the message from rpc? */}
-            <DeviceAction state={state} type={palette} Result={SignTransactionResult(transactionData, derivationPath)} />
+            <DeviceAction state={state} type={palette} transactionData={transactionData}  derivationPath={derivationPath} Result={SignTransactionResult} />
           </DeviceActionWrapper>
           
           {

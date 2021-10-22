@@ -292,3 +292,17 @@ export const renderLoading = ({
       <Title>{children }</Title>
     </Footer>
   </Wrapper>;
+
+export const renderVerifyUnwrapped = ({
+  modelId,
+  type,
+  t
+}) => (<Wrapper>
+  <AnimationWrapper modelId={modelId}>
+    <Animation animation={getDeviceAnimation(modelId, type, "validate")} />
+  </AnimationWrapper>
+  <Footer>
+      <Title>{t("signTx")}</Title>
+    </Footer>
+  </Wrapper>
+);
