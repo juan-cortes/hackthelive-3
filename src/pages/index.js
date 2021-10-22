@@ -210,7 +210,7 @@ const SignTransactionResult = (transactionData, derivationPath) => ({state}) => 
       value,
     });
     // TODO LUIZ HELP <==
-    const result = await eth.signTransaction("44'/60'/0'/0/0", rawTx.serialize().toString("hex"))
+    const result = await eth.signTransaction(derivationPath, rawTx.serialize().toString("hex"))
   }, [])
   
   return null;
