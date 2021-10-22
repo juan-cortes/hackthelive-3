@@ -101,7 +101,7 @@ const Result = ({state}) => {
     }
   }, []);
 
-  return addresses.length?<pre>{JSON.stringify(addresses, null, 2)}</pre>:null;
+  return addresses.length?<Text><pre>{JSON.stringify(addresses, null, 2)}</pre></Text>:null;
 }
 
 function Home() {
@@ -194,7 +194,7 @@ function Home() {
       let device = null; // used as internal state for polling
 
       function loop() {
-        if (transport._disconnectEmitted) {
+        if (transport && transport._disconnectEmitted) {
           if(isBle){
             // We can no longer trust this device, clean this up to avoid multiple calls
             TransportWebBLE.openConnected().then(t=> {
@@ -225,6 +225,7 @@ function Home() {
             timeout(DEVICE_POLLING_TIMEOUT),
             catchError((err) => {
               console.log("wadus", "error", err);
+              return of("disconnected")
             })
           )
           .subscribe({
@@ -299,7 +300,8 @@ function Home() {
           // default debounce (to be tweak)
           return interval(2000);
         }),
-        takeWhile((s) => !s.requiresAppInstallation && !s.error, true)
+        takeWhile((s) => !s.requiresAppInstallation && !s.error, true),
+        catchError((e) => of("disconnected"))
       ) // the state simply goes into a React state
       .subscribe(setState);
 
@@ -331,7 +333,7 @@ function Home() {
           <Button type="primary" disabled={typeof window === "undefined" || !window.navigator.bluetooth} onClick={onConnectBLE}>
             BLE
           </Button>          </> : <>
-            <Button
+            { /** <Button
               type="primary"
               onClick={() => setTransport()}
             >
@@ -342,7 +344,8 @@ function Home() {
             </Button>
             <Button type="primary" onClick={onGetAppAndVersion}>
               Send getAppAndVersion apdu
-            </Button>
+            </Button> 
+            */}
           </>
         }
         </ButtonWrapper>
