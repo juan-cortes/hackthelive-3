@@ -97,15 +97,15 @@ const AddressLine = styled(Flex).attrs(() => ({
   alignItems: "center"
 }))`
 cursor: pointer;
-border: 1px solid ${p => p.theme.colors.palette.neutral.c40};
-border-radius: 4px;
 margin: 15px;
-padding: 15px;
-background-color: ${p => p.theme.colors.palette.primary.c80};
 max-width: 600px;
 min-width: 400px;
 align-self: center;
 animation: ${fadeIn} .4s ease-out forwards;
+${Button} {
+  flex: 1;
+  width: 100%;
+}
 `
 
 
@@ -130,9 +130,12 @@ const Result = ({state}) => {
 
   return addresses.length ? <Container>
     {addresses.map((addr, i) => 
-      <AddressLine key={i} onClick={() => selectAddress(addr)}>
-        <Text type="body">{addr.address}</Text>
-      </AddressLine>)}
+    <AddressLine>
+      <Button type="primary" key={i} onClick={() => selectAddress(addr)}>
+        {addr.address}
+      </Button>
+    </AddressLine>
+      )}
     </Container> : null;
 }
 
