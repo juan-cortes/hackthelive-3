@@ -136,7 +136,7 @@ const DeviceAction = ({
     });
   }
 
-  return null;
+  return <Result state={state} />;
 };
 
 export default DeviceAction;
