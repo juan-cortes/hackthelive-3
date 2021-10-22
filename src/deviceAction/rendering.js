@@ -116,11 +116,8 @@ const TroubleshootingWrapper = styled.div`
 export const renderRequestQuitApp = ({
   modelId,
   type,
-}) => {
-  const { t } = useTranslation("deviceAction");
-  
-  return (
-  <Wrapper>
+  t
+}) => <Wrapper>
     <Header />
     <AnimationWrapper modelId={modelId}>
       <Animation animation={getDeviceAnimation(modelId, type, "quitApp")} />
@@ -130,14 +127,9 @@ export const renderRequestQuitApp = ({
         {t("quitApp")}
       </Title>
     </Footer>
-  </Wrapper>
-);};
+  </Wrapper>;
 
-export const renderListingApps = () => {
-  const { t } = useTranslation("deviceAction");
-  
-  return (
-  <Wrapper id="deviceAction-loading">
+export const renderListingApps = ({ t }) => <Wrapper id="deviceAction-loading">
     <Header />
     <ProgressWrapper>
       <InfiniteLoader />
@@ -150,15 +142,14 @@ export const renderListingApps = () => {
         {t("listAppsDescription")}
       </SubTitle>
     </Footer>
-  </Wrapper>
-);};
+  </Wrapper>;
 
 export const renderAllowManager = ({
   modelId,
   type,
   wording,
+  t
 }) => {
-  const { t } = useTranslation("deviceAction");
   
   return (
   <Wrapper>
@@ -181,11 +172,8 @@ export const renderAllowOpeningApp = ({
   wording,
   tokenContext,
   isDeviceBlocker,
-}) => {
-  const { t } = useTranslation("deviceAction");
-  
-  return (
-  <Wrapper>
+  t
+}) => <Wrapper>
     {isDeviceBlocker ? <DeviceBlocker /> : null}
     <Header />
     <AnimationWrapper modelId={modelId}>
@@ -202,8 +190,7 @@ export const renderAllowOpeningApp = ({
         )}
       </Title>
     </Footer>
-  </Wrapper>
-);};
+  </Wrapper>;
 
 export const renderError = ({
   error,
@@ -215,11 +202,8 @@ export const renderError = ({
   warning,
   managerAppName,
   requireFirmwareUpdate,
-}) => {
-  const { t } = useTranslation("deviceAction");
-  
-  return (
-  <Wrapper id={`error-${error.name}`}>
+  t
+}) => <Wrapper id={`error-${error.name}`}>
     <Logo warning={warning}>
       <ErrorIcon size={44} error={error} />
     </Logo>
@@ -236,12 +220,12 @@ export const renderError = ({
             </Button>
           ) : null}
     </ButtonContainer>
-  </Wrapper>
-);};
+  </Wrapper>;
 
 export const renderInWrongAppForAccount = ({
   onRetry,
   accountName,
+  t
 }) =>
   renderError({
     error: new WrongDeviceForAccount(null, { accountName }),
@@ -256,8 +240,8 @@ export const renderConnectYourDevice = ({
   onRetry,
   device,
   unresponsive,
+  t
 }) => {
-  const { t } = useTranslation("deviceAction");
   
   return (
   <Wrapper>
@@ -282,11 +266,8 @@ export const renderConnectYourDevice = ({
 export const renderFirmwareUpdating = ({
   modelId,
   type,
-}) => {
-  const { t } = useTranslation("deviceAction");
-  
-  return (
-  <Wrapper>
+  t
+}) => <Wrapper>
     <Header />
     <AnimationWrapper modelId={modelId}>
       <Animation animation={getDeviceAnimation(modelId, type, "firmwareUpdating")} />
@@ -296,18 +277,13 @@ export const renderFirmwareUpdating = ({
         {t("unlockDeviceAfterFirmwareUpdate")}
       </Title>
     </Footer>
-  </Wrapper>
-);
-  };
+  </Wrapper>;
 
 export const renderLoading = ({
   modelId,
   children,
-}) => {
-  const { t } = useTranslation("deviceAction");
-  
-  return (
-  <Wrapper id="deviceAction-loading">
+  t
+}) => <Wrapper id="deviceAction-loading">
     <Header />
     <AnimationWrapper modelId={modelId}>
       <InfiniteLoader />
@@ -315,6 +291,4 @@ export const renderLoading = ({
     <Footer>
       <Title>{children || t("loading") }</Title>
     </Footer>
-  </Wrapper>
-);
-  };
+  </Wrapper>;

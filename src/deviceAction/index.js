@@ -50,16 +50,16 @@ const DeviceAction = ({
   const modelId = device ? device.modelId : overridesPreferredDeviceModel || preferredDeviceModel;
 
   if (requestQuitApp) {
-    return renderRequestQuitApp({ modelId, type });
+    return renderRequestQuitApp({ modelId, type, t });
   }
 
   if (allowManagerRequestedWording) {
     const wording = allowManagerRequestedWording;
-    return renderAllowManager({ modelId, type, wording });
+    return renderAllowManager({ modelId, type, wording, t });
   }
 
   if (listingApps) {
-    return renderListingApps();
+    return renderListingApps({ t });
   }
 
   if (allowOpeningRequestedWording || requestOpenApp) {
@@ -71,6 +71,7 @@ const DeviceAction = ({
       wording,
       tokenContext,
       isDeviceBlocker: !requestOpenApp,
+      t,
     });
   }
 
@@ -78,6 +79,7 @@ const DeviceAction = ({
     return renderInWrongAppForAccount({
       onRetry,
       accountName: inWrongDeviceForAccount.accountName,
+      t,
     });
   }
 
@@ -86,6 +88,7 @@ const DeviceAction = ({
       error,
       onRetry,
       withExportLogs: true,
+      t,
     });
   }
 
@@ -96,11 +99,12 @@ const DeviceAction = ({
       unresponsive,
       device,
       onRetry,
+      t
     });
   }
 
   if (isLoading || (allowOpeningGranted && !appAndVersion)) {
-    return renderLoading({ modelId });
+    return renderLoading({ modelId, t });
   }
 
   if (request && signMessageRequested) {
@@ -127,6 +131,7 @@ const DeviceAction = ({
 
           t("send.steps.verification.streaming.inaccurate")
         ),
+        t
     });
   }
 

@@ -130,7 +130,7 @@ const Result = ({state}) => {
 
   return addresses.length ? <Container>
     {addresses.map((addr, i) => 
-    <AddressLine>
+    <AddressLine key={i}>
       <Button type="primary" key={i} onClick={() => selectAddress(addr)}>
         {addr.address}
       </Button>
