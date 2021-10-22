@@ -6,7 +6,6 @@ export const RPCContext = React.createContext({});
 const RPCProvider = ({ children }) => {
   const [requestAccount, setRequestAccounts] = useState({});
   const [transactionData, setTransactionData] = useState({});
-  const [rpc, setRpc] = useState(null);
 
   useEffect(() => {
     if (!window.opener) return null;
@@ -25,15 +24,11 @@ const RPCProvider = ({ children }) => {
       setTransactionData({transaction, derivationPath});
     });
 
-    setRpc(rpc);
+    console.log('rpc ready before');
+    rpc.call("ready").then(() => console.log("ready call"));
+    console.log('rpc ready after');
   }, []);
 
-  useEffect(() => {
-    console.log('rdc.isReady before');
-    if (rpc?.isReady()) rpc.call("ready").then(() => console.log("ready call"));
-    console.log('rdc.isReady after');
-  }, [rpc])
-  
   return (
     <RPCContext.Provider value={{requestAccount, transactionData}}>{children}</RPCContext.Provider>
   );
