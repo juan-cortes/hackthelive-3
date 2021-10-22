@@ -36,6 +36,8 @@ import {
 import isEqual from "lodash/isEqual";
 
 import getAppAndVersion from "../pages/cmd/getAppAndVersion";
+import getAddress from "../pages/cmd/getAddress";
+
 import connectApp from "../pages/cmd/connectApp";
 import useReplaySubject from "../pages/utils/useReplaySubject";
 import { reducer, getInitialState } from "../pages/deviceAction/reducer";
@@ -83,14 +85,23 @@ const ButtonWrapper = styled(Flex).attrs(() => ({
 }))`
 `
 
-const Result = () => {
 
-  useEffect( () => {
-    // do logic heere
+const APP = "Ethereum"; // <-- make sure you have this installed
+const Result = ({state}) => {
+  const [addresses, setAddresses] = useState([])
+  useEffect( async () => {
+    if (!state.appAndVersion) return null;
+    setAddresses([]);
 
+    const transport = await TransportWebUSB.openConnected();
+    const app = state.appAndVersion.name.toLowerCase();
+    for (let i=1; i<10; i++) {
+      const address = await getAddress[app](transport, { path: `44'/60'/${i}'/0/0`});
+      setAddresses(addresses => [...addresses, address])
+    }
   }, []);
 
-  return null;
+  return addresses.length?<pre>{JSON.stringify(addresses, null, 2)}</pre>:null;
 }
 
 function Home() {
@@ -152,7 +163,7 @@ function Home() {
 
   useEffect(() => {
     if (!running || state.opened) return;
-    const action = (transport) => connectApp({transport, appName:"Bitcoin"})
+    const action = (transport) => connectApp({transport, appName: APP})
     
     // Buckle up for spageti 
     const sub = Observable.create((o) => {
