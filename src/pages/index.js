@@ -131,15 +131,42 @@ animation: ${fadeInGrow} .4s ease-out forwards;
 const APP = "Ethereum"; // <-- make sure you have this installed
 const Result = ({state}) => {
   const [addresses, setAddresses] = useState([])
+
+  useEffect(() => {
+    try{
+      const adrs = JSON.parse(localStorage.getItem("addresses"));
+
+      if(addresses.length > 0)
+        localStorage.setItem("addresses", JSON.stringify(
+          addresses.concat(adrs || []).filter((a,i,arr) => arr
+          .findIndex((ar) => ar.address === a.address) === i)
+        ))
+    } catch(e) {
+      console.error(e);
+    } 
+    
+  }, [addresses])
+
+  useEffect(() => {
+    try{
+      const adrs = JSON.parse(localStorage.getItem("addresses"));
+      console.log(adrs)
+      if(adrs) setAddresses(adrs)
+    } catch(e) {
+      console.error(e);
+    }    
+  }, []);
+
   useEffect( async () => {
     if (!state.appAndVersion) return null;
-    setAddresses([]);
 
     const transport = await TransportWebUSB.openConnected();
     const app = state.appAndVersion.name.toLowerCase();
     for (let i=1; i<10; i++) {
       const address = await getAddress[app](transport, { path: `44'/60'/${i}'/0/0`});
-      setAddresses(addresses => [...addresses, address])
+      setAddresses(addresses => [...addresses, address].filter((a,i,arr) => arr
+          .findIndex((ar) => ar.address === a.address) === i)
+        )
     }
   }, []);
 
@@ -159,9 +186,9 @@ const Result = ({state}) => {
 }
 
 function Home() {
+  const { t } = useTranslation("common");
   const [transport, setTransport] = useState();
   const [isBle, setIsBle] = useState(false);
-  const [isBLESupported, setBLESupported] = useState(false);
   const [running, setRunning] = useState(false);
   const [state, setState] = useState(getInitialState(transport));
   const deviceSubject = useReplaySubject(transport?.device); // Is device and transport interchangeable here?
@@ -194,6 +221,7 @@ function Home() {
       setIsBle(false);
       setTransport(transport);
       setRunning(true);
+      localStorage.setItem("addresses", JSON.stringify([]))
     }
   }, []);
 
@@ -205,16 +233,13 @@ function Home() {
       setIsBle(true);
       setTransport(transport);
       setRunning(true);
+      localStorage.setItem("addresses", JSON.stringify([]))
     }
   }, []);
 
   useEffect(()=>{
     logger.listen(log => console.log(log.type + ": " + log.message))
   },[]);
-
-  
-
-
   
   const onGetAppAndVersion = useCallback(async () => {
     if (transport) {
@@ -384,11 +409,6 @@ function Home() {
     };
   }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
-  // Running client-side only - Set BLE as supported if available
-  useEffect(() => {
-    if (typeof window !== "undefined" || window.navigator.bluetooth) setBLESupported(true);
-  }, []);
-
   return (
     <StyleProvider fontsPath="assets/fonts" selectedPalette={palette}>
       <Wrapper>
@@ -420,6 +440,7 @@ function Home() {
           
         </Container>
       </Wrapper>
+    </StyleProvider>
   );
 }
 
