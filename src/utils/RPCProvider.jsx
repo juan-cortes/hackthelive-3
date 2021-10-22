@@ -6,7 +6,8 @@ const exposedMethods = ["requestAccount", "signTransaction"];
 export const RPCContext = React.createContext({});
 
 const RPCProvider = ({ children }) => {
-  const [rpcMethods, setRPCMethods] = useState({});
+  const [requestAccount, setRequestAccounts] = useState({});
+  const [transactionData, setTransactionData] = useState({});
 
   useEffect(() => {
     if (!window.opener) return null;
@@ -17,28 +18,19 @@ const RPCProvider = ({ children }) => {
     });
 
     // expose methods to the consumer
-    exposedMethods.forEach((method) => {
-      rpc.expose(
-        method,
-        () =>
-          new Promise((resolve, reject) =>
-            setRPCMethods((current) => ({
-              ...current,
-              [method]: { resolve, reject },
-            }))
-          )
-      );
+    rpc.expose("requestAccount",
+        () => new Promise((resolve, reject) =>  setRequestAccounts({ resolve, reject }))
+    );
+
+    rpc.expose("signTransaction", (transaction, derivationPath) => {
+      setTransactionData({transaction, derivationPath});
     });
 
-    // --- Window.opener mock call
-    /* rpc.call("requestAccount").then((result) => {
-    **   console.log('rpc.call("requestAccount") result', result);
-    **   return result;
-       }); */
+    rpc.call("ready");
   }, []);
 
   return (
-    <RPCContext.Provider value={rpcMethods}>{children}</RPCContext.Provider>
+    <RPCContext.Provider value={{requestAccount, transactionData}}>{children}</RPCContext.Provider>
   );
 };
 

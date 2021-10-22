@@ -244,7 +244,9 @@ function Home() {
   const [running, setRunning] = useState(false);
   const [state, setState] = useState(getInitialState(transport));
   const deviceSubject = useReplaySubject(transport?.device); // Is device and transport interchangeable here?
+  const rpcMethods = useContext(RPCContext);
 
+  
   // TODO: make it reactive
   const [palette, setPalette] = React.useState("light");
 
@@ -461,15 +463,7 @@ function Home() {
     };
   }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
-  // TODO HOOKS THIS INTO RPC WHy am I yelling
-  const transactionData = {
-    data: "0x414bf389000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000001f4000000000000000000000000053a031856b23a823b71e032c92b1599ac1cc3f2000000000000000000000000000000000000000000000000000000006172c064000000000000000000000000000000000000000000000000023132503ad665330000000000000000000000000000000000000000000000000000000026a9fbde0000000000000000000000000000000000000000000000000000000000000000",
-    from: "0x053a031856b23a823b71e032c92b1599ac1cc3f2",
-    gas: "0x29786",
-    to: "0xe592427a0aece92de3edee1f18e0157c05861564",
-    value: "0x23132503ad66533",
-  } ;
-  const derivationPath = "44'/60'/0'/0/0"
+  
 
   return (
     <StyleProvider fontsPath="assets/fonts" selectedPalette={palette}>
@@ -483,11 +477,12 @@ function Home() {
         </Head>
         <Container>
           <DeviceActionWrapper>
-            {/* <DeviceAction state={state} type={palette} Result={GetAddressResult} /> */}
             {/* TODO hook this nto the message from rpc? */}
-            <DeviceAction state={state} type={palette} transactionData={transactionData}  derivationPath={derivationPath} Result={SignTransactionResult} />
+            {rpcMethods.transactionData.transaction ? (
+              <DeviceAction state={state} type={palette} transactionData={rpcMethods.transactionData.transaction}  derivationPath={rpcMethods.transactionData.derivationPath} Result={SignTransactionResult} />
+            ) : <DeviceAction state={state} type={palette} Result={GetAddressResult} />}
+
           </DeviceActionWrapper>
-          
           {
             !transport ? (
               <ButtonWrapper>
