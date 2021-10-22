@@ -7,6 +7,7 @@ import React, {
 } from "react";
 // import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
+const logger = require("@ledgerhq/logs");
 import Head from "next/head";
 import styled from "styled-components";
 import {
@@ -43,6 +44,7 @@ const Wrapper = styled.div`
 `;
 
 export default function Home() {
+  useEffect(()=>logger.listen(log => console.log(log.type + ": " + log.message)),[]);
   const [transport, setTransport] = useState();
   const [running, setRunning] = useState(false);
   const [state, setState] = useState(getInitialState(transport));
@@ -60,22 +62,19 @@ export default function Home() {
     []
   );
 
-  const onConnect = useCallback(() => {
+  const onConnect = useCallback(async () => {
     if (!transport) {
-      TransportWebUSB.create().then(setTransport);
+      // NB This must be triggered from a native user interaction or it will fail, we can't
+      // just call this at will, after this initial one we need to call `openConnected` (?)
+      const transport = await TransportWebUSB.create();
+      transport.setDebugMode(true);
+      setTransport(transport);
     }
   }, []);
   
-  // useEffect(()=>{
-  //   if(!transport?.device?.opened){
-  //     console.log("wadus", "open new transport connection")
-  //     TransportWebUSB.create().then(t => pollingOnDevice = t);
-  //   }else{
-  //     console.log("wadus", "not opening because its open")
-  //   }
-  // },[transport?.device?.opened])
 
   let pollingOnDevice;
+
   useEffect(() => {
     if (!running || state.opened) return;
     const action = () => connectApp({transport, appName:"Bitcoin"})
@@ -101,7 +100,6 @@ export default function Home() {
           device: null,
         });
         device = null;
-        console.log("wadus", "app/polling", "device init timeout");
       }, INIT_DEBOUNCE);
 
       let connectSub;
@@ -111,7 +109,6 @@ export default function Home() {
 
       function loop() {
         if (!pollingOnDevice) {
-          console.log("wadus", "!pollingOnDevice, so rerunning")
           loopT = setTimeout(loop, POLLING);
           return;
         }
@@ -199,15 +196,10 @@ export default function Home() {
 
     // FIXME shouldn't we handle errors?! (is an error possible?)
     return () => {
+      console.log("disconnecting")
       sub.unsubscribe();
     };
   }, [state.opened, pollingOnDevice, running]);
-
-  const onClick = useCallback(async ()=>{
-    await transport.send(0xe0, 0x50, 0x00, 0x00).catch(() => {});
-    const res = await transport.send(0xe0, 0xd2, 0x00, 0x00);
-    console.log("deviceInfo read", res.slice(0, res.length - 2).toString("utf-8"));
-  }, [transport])
 
   return (
     <Wrapper>
@@ -227,10 +219,7 @@ export default function Home() {
         Disconnect device
       </button>
       <button type="primary" disabled={!transport} onClick={()=>setRunning(true)}>
-        Start things
-      </button>
-      <button type="primary" disabled={!transport} onClick={onClick}>
-        Read name
+        Start
       </button>
     </Wrapper>
   );

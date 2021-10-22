@@ -26,6 +26,7 @@ const cmd = ({
 
     const innerSub = ({ appName }) => defer(() => from(getAppAndVersion(transport))).pipe(
         concatMap((appAndVersion) => {
+          console.log("got app and version again", appAndVersion)
           timeoutSub.unsubscribe();
           if (["BOLOS", "OLOS\u0000"].includes(appAndVersion.name)) {
             // Try to open app
@@ -86,9 +87,9 @@ const cmd = ({
         })
       );
     
-    const sub = innerSub({
+    const sub = concat(innerSub({
       appName,
-    }).subscribe(o);
+    })).subscribe(o);
 
     return () => {
       timeoutSub.unsubscribe();
