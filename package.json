@@ -16,6 +16,7 @@
     "@ledgerhq/logs": "^6.10.0",
     "@ledgerhq/react-ui": "^0.1.0",
     "eip55": "^2.1.0",
+    "ethereumjs-tx": "^2.1.2",
     "next": "^11.0.0",
     "next-i18next": "^8.9.0",
     "next-transpile-modules": "^8.0.0",

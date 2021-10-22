@@ -13,6 +13,8 @@ import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import TransportWebBLE from "@ledgerhq/hw-transport-web-ble";
 const logger = require("@ledgerhq/logs");
 import Head from "next/head";
+import Eth from "@ledgerhq/hw-app-eth";
+import { Transaction } from "ethereumjs-tx"
 import styled, { keyframes }from "styled-components";
 import {
   concat,
@@ -129,7 +131,7 @@ animation: ${fadeInGrow} .4s ease-out forwards;
 
 
 const APP = "Ethereum"; // <-- make sure you have this installed
-const Result = ({state}) => {
+const GetAddressResult = ({state}) => {
   const [addresses, setAddresses] = useState([])
 
   useEffect(() => {
@@ -183,6 +185,35 @@ const Result = ({state}) => {
     </AddressLine>
       )}
     </AddressContainer> : null;
+}
+
+const SignTransactionResult = (transactionData, derivationPath) => ({state}) => {
+  // We have access to the data passed from the provider at this point
+  const {
+    data,
+    from,
+    gas,
+    to,
+    value,
+  } = transactionData;
+
+  useEffect( async () => {
+    if (!state.appAndVersion) return null;
+    console.log("wadus", { transactionData })
+    const transport = await TransportWebUSB.openConnected();
+    const eth = new Eth(transport);
+    const rawTx = new Transaction({
+      nonce: '0x00', 
+      gasLimit: '0x27100', 
+      data,
+      to,
+      value,
+    });
+    // TODO LUIZ HELP <==
+    const result = await eth.signTransaction("44'/60'/0'/0/0", rawTx.serialize().toString("hex"))
+  }, [])
+  
+  return null;
 }
 
 function Home() {
@@ -409,6 +440,16 @@ function Home() {
     };
   }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
+  // TODO HOOKS THIS INTO RPC WHy am I yelling
+  const transactionData = {
+    data: "0x414bf389000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000001f4000000000000000000000000053a031856b23a823b71e032c92b1599ac1cc3f2000000000000000000000000000000000000000000000000000000006172c064000000000000000000000000000000000000000000000000023132503ad665330000000000000000000000000000000000000000000000000000000026a9fbde0000000000000000000000000000000000000000000000000000000000000000",
+    from: "0x053a031856b23a823b71e032c92b1599ac1cc3f2",
+    gas: "0x29786",
+    to: "0xe592427a0aece92de3edee1f18e0157c05861564",
+    value: "0x23132503ad66533",
+  } ;
+  const derivationPath = "44'/60'/0'/0/0"
+
   return (
     <StyleProvider fontsPath="assets/fonts" selectedPalette={palette}>
       <Wrapper>
@@ -421,7 +462,9 @@ function Home() {
         </Head>
         <Container>
           <DeviceActionWrapper>
-            <DeviceAction state={state} type={palette} Result={Result} />
+            {/* <DeviceAction state={state} type={palette} Result={GetAddressResult} /> */}
+            {/* TODO hook this nto the message from rpc? */}
+            <DeviceAction state={state} type={palette} Result={SignTransactionResult(transactionData, derivationPath)} />
           </DeviceActionWrapper>
           
           {
