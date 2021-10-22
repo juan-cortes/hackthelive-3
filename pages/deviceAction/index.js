@@ -2,20 +2,15 @@ import React, { useEffect, Component, useReducer } from "react";
 import {
   renderAllowManager,
   renderAllowOpeningApp,
-  renderBootloaderStep,
   renderConnectYourDevice,
   renderError,
   renderInWrongAppForAccount,
   renderLoading,
   renderRequestQuitApp,
-  renderRequiresAppInstallation,
-  renderInstallingApp,
   renderListingApps,
-  renderWarningOutdated,
-  renderSwapDeviceConfirmationV2,
-  renderSellDeviceConfirmation,
 } from "./rendering";
-import reducer from "./reducer";
+import { reducer, getInitialState } from "./reducer";
+import { useTranslation } from "react-i18next";
 
 const DeviceAction = ({
   action,
@@ -24,9 +19,11 @@ const DeviceAction = ({
   onResult,
   reduxDevice,
   overridesPreferredDeviceModel,
-  preferredDeviceModel,
-  dispatch,
+  preferredDeviceModel = "nanoX",
+  type,
+  state,
 }) => {
+  const { t } = useTranslation();
   const {
     appAndVersion,
     device,
@@ -47,26 +44,27 @@ const DeviceAction = ({
     deviceStreamingProgress,
     allowOpeningGranted,
     signMessageRequested,
-  } = useReducer(reducer);
+  } = state;
+
+  console.log(state)
 
 
   const modelId = device ? device.modelId : overridesPreferredDeviceModel || preferredDeviceModel;
 
   if (requestQuitApp) {
-    return renderRequestQuitApp({ modelId, type });
+    return renderRequestQuitApp({ modelId, type, t });
   }
 
   if (allowManagerRequestedWording) {
     const wording = allowManagerRequestedWording;
-    return renderAllowManager({ modelId, type, wording });
+    return renderAllowManager({ modelId, type, wording, t });
   }
 
   if (listingApps) {
-    return renderListingApps();
+    return renderListingApps({ t });
   }
 
   if (allowOpeningRequestedWording || requestOpenApp) {
-    // requestOpenApp for Nano S 1.3.1 (need to ask user to open the app.)
     const wording = allowOpeningRequestedWording || requestOpenApp;
     const tokenContext = request && request.tokenCurrency;
     return renderAllowOpeningApp({
@@ -75,6 +73,7 @@ const DeviceAction = ({
       wording,
       tokenContext,
       isDeviceBlocker: !requestOpenApp,
+      t
     });
   }
 
@@ -82,32 +81,16 @@ const DeviceAction = ({
     return renderInWrongAppForAccount({
       onRetry,
       accountName: inWrongDeviceForAccount.accountName,
+      t
     });
   }
 
   if (!isLoading && error) {
-    if (
-      error instanceof ManagerNotEnoughSpaceError ||
-      error instanceof OutdatedApp ||
-      error instanceof UpdateYourApp
-    ) {
-      return renderError({
-        error,
-        managerAppName: error.managerAppName,
-      });
-    }
-
-    if (error instanceof LatestFirmwareVersionRequired) {
-      return renderError({
-        error,
-        requireFirmwareUpdate: true,
-      });
-    }
-
     return renderError({
       error,
       onRetry,
       withExportLogs: true,
+      t
     });
   }
 
@@ -117,39 +100,25 @@ const DeviceAction = ({
       type,
       unresponsive,
       device,
-      onRepairModal,
       onRetry,
+      t
     });
   }
 
   if (isLoading || (allowOpeningGranted && !appAndVersion)) {
-    return renderLoading({ modelId });
-  }
-
-  if (request && device && deviceSignatureRequested) {
-    const { account, parentAccount, status, transaction } = request;
-    if (account && status && transaction) {
-      return (
-        <TransactionConfirm
-          device={device}
-          account={account}
-          parentAccount={parentAccount}
-          transaction={transaction}
-          status={status}
-        />
-      );
-    }
+    return renderLoading({ modelId, t });
   }
 
   if (request && signMessageRequested) {
     const { account } = request;
-    return (
-      <SignMessageConfirm
-        device={device}
-        account={account}
-        signMessageRequested={signMessageRequested}
-      />
-    );
+    return null;
+    // return (
+    //   <SignMessageConfirm
+    //     device={device}
+    //     account={account}
+    //     signMessageRequested={signMessageRequested}
+    //   />
+    // );
   }
 
   if (typeof deviceStreamingProgress === "number") {
@@ -158,24 +127,16 @@ const DeviceAction = ({
       children:
         deviceStreamingProgress > 0 ? (
           // with streaming event, we have accurate version of the wording
-          <Trans
-            i18nKey="send.steps.verification.streaming.accurate"
-            values={{ percentage: (deviceStreamingProgress * 100).toFixed(0) + "%" }}
-          />
+          t("send.steps.verification.streaming.accurate", { percentage: (deviceStreamingProgress * 100).toFixed(0) + "%" })
         ) : (
           // otherwise, we're not accurate (usually because we don't need to, it's fast case)
 
-          <Trans i18nKey="send.steps.verification.streaming.inaccurate" />
+          t("send.steps.verification.streaming.inaccurate")
         ),
     });
   }
 
   return null;
 };
-
-const mapStateToProps = createStructuredSelector({
-  reduxDevice: getCurrentDevice,
-  preferredDeviceModel: preferredDeviceModelSelector,
-});
 
 export default DeviceAction;

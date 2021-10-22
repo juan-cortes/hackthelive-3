@@ -4,6 +4,7 @@ import React, {
   useState,
   useMemo,
   useRef,
+  useReducer
 } from "react";
 // import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
@@ -38,12 +39,32 @@ import connectApp from "../pages/cmd/connectApp";
 import useReplaySubject from "../pages/utils/useReplaySubject";
 import { reducer, getInitialState } from "../pages/deviceAction/reducer";
 
-const Wrapper = styled.div`
-  padding: 20px;
-  border: 1px solid red;
-`;
+import { StyleProvider, Text, Logos, Flex, Button } from "@ledgerhq/react-ui";
 
-export default function Home() {
+import DeviceAction from "./deviceAction";
+
+const Wrapper = styled(Flex).attrs(() => ({
+  p: 2,
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center"
+}))`
+background-color: ${p => p.theme.colors.palette.background.main};
+height: 100vh;
+width: 100vw;
+`
+
+const Result = () => {
+
+  useEffect( () => {
+    // do logic heere
+
+  }, []);
+
+  return null;
+}
+
+function Home() {
   useEffect(()=>logger.listen(log => console.log(log.type + ": " + log.message)),[]);
   const [transport, setTransport] = useState();
   const [running, setRunning] = useState(false);
@@ -221,27 +242,33 @@ export default function Home() {
   }, [state.opened, transport?.channel, pollingOnDevice, running]);
 
   return (
+      <StyleProvider fontsPath="assets/fonts" selectedPalette={palette}>
     <Wrapper>
       <Head>
         <title>Hack the Live #3</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <button type="primary" disabled={!!transport} onClick={onConnect}>
+      <DeviceAction state={state} type={palette} Result={Result} />
+      <Button type="primary" disabled={!!transport} onClick={onConnect}>
         Connect device
-      </button>
-      <button
+      </Button>
+      <Button
         type="primary"
         disabled={!transport}
         onClick={() => setTransport()}
       >
         Disconnect device
-      </button>
-      <button type="primary" disabled={!transport} onClick={()=>setRunning(true)}>
+      </Button>
+      <Button type="primary" disabled={!transport} onClick={()=>setRunning(true)}>
         Start
-      </button>
-      <button type="primary" disabled={!transport} onClick={onGetAppAndVersion}>
+      </Button>
+      <Button type="primary" disabled={!transport} onClick={onGetAppAndVersion}>
         Send getAppAndVersion apdu
-      </button>
+      </Button>
     </Wrapper>
+    </StyleProvider>
   );
 }
+
+
+export default Home;
